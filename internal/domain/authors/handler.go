@@ -1,97 +1,104 @@
 package authors
 
 import (
+	"library-api-go/pkg/apperros"
+	"library-api-go/pkg/response"
+	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type AuthorsHandler struct {
-	authorsService *AuthorsService
+	authorsService ServiceInterface
 }
 
-func NewAuthorsHandler(authorsService *AuthorsService) *AuthorsHandler {
+func NewAuthorsHandler(authorsService ServiceInterface) *AuthorsHandler {
 	return &AuthorsHandler{authorsService: authorsService}
 }
 
 func (h *AuthorsHandler) GetAllAuthors(c *gin.Context) {
-	authors, err := h.authorsService.FindAll()
+	time.Sleep(5 * time.Second)
+
+	authors, err := h.authorsService.FindAll(c.Request.Context())
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		response.ErrorResponse(c, http.StatusInternalServerError, apperros.ErrInternalServerError)
 		return
 	}
+
 	if len(authors) == 0 {
-		c.JSON(404, gin.H{"error": "Authors not found"})
+		response.Success(c, http.StatusOK, []ResponseAuthorsDTO{})
 		return
 	}
 	responseAuthors := make([]ResponseAuthorsDTO, len(authors))
 	for i, author := range authors {
 		responseAuthors[i] = author.ToResponseAuthorsDTO()
 	}
-	c.JSON(200, responseAuthors)
+	response.Success(c, http.StatusOK, responseAuthors)
 }
 
 func (h *AuthorsHandler) GetAuthorById(c *gin.Context) {
 	id := c.Param("id")
 	parserdId, err := strconv.Atoi(id)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid ID"})
+		response.ErrorResponse(c, http.StatusBadRequest, apperros.ErrBadParamInput)
 		return
 	}
-	author, err := h.authorsService.FindById(parserdId)
+	author, err := h.authorsService.FindById(c.Request.Context(), parserdId)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		response.ErrorResponse(c, http.StatusInternalServerError, apperros.ErrInternalServerError)
 		return
 	}
-	c.JSON(200, author.ToResponseAuthorsDTO())
+	response.Success(c, http.StatusOK, author.ToResponseAuthorsDTO())
 }
 
 func (h *AuthorsHandler) CreateAuthor(c *gin.Context) {
 	var author RequestAuthorsDTO
 	if err := c.ShouldBindJSON(&author); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		response.ErrorResponse(c, http.StatusBadRequest, apperros.ErrBadParamInput)
 		return
 	}
 
-	createdAuthor, err := h.authorsService.Create(author.ToAuthors())
+	createdAuthor, err := h.authorsService.Create(c.Request.Context(), author.ToAuthors())
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		response.ErrorResponse(c, http.StatusInternalServerError, apperros.ErrInternalServerError)
 		return
 	}
-	c.JSON(201, createdAuthor.ToResponseAuthorsDTO())
+	response.Success(c, http.StatusCreated, createdAuthor.ToResponseAuthorsDTO())
 }
 
 func (h *AuthorsHandler) UpdateAuthor(c *gin.Context) {
 	var author RequestAuthorsDTO
 	if err := c.ShouldBindJSON(&author); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		response.ErrorResponse(c, http.StatusBadRequest, apperros.ErrBadParamInput)
 		return
 	}
-	updatedAuthor, err := h.authorsService.Update(author.ToAuthors())
+	updatedAuthor, err := h.authorsService.Update(c.Request.Context(), author.ToAuthors())
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		response.ErrorResponse(c, http.StatusInternalServerError, apperros.ErrInternalServerError)
 		return
 	}
-	c.JSON(200, updatedAuthor.ToResponseAuthorsDTO())
+	response.Success(c, http.StatusOK, updatedAuthor.ToResponseAuthorsDTO())
 }
 
 func (h *AuthorsHandler) DeleteAuthor(c *gin.Context) {
 	id := c.Param("id")
 	parserdId, err := strconv.Atoi(id)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid ID"})
+		response.ErrorResponse(c, http.StatusBadRequest, apperros.ErrBadParamInput)
 		return
 	}
 
-	author, err := h.authorsService.FindById(parserdId)
+	author, err := h.authorsService.FindById(c.Request.Context(), parserdId)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		response.ErrorResponse(c, http.StatusInternalServerError, apperros.ErrInternalServerError)
 		return
 	}
-	err = h.authorsService.Delete(author)
+	err = h.authorsService.Delete(c.Request.Context(), author)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		response.ErrorResponse(c, http.StatusInternalServerError, apperros.ErrInternalServerError)
 		return
 	}
-	c.JSON(204, nil)
+	response.Success(c, http.StatusNoContent, nil)
 }

@@ -1,29 +1,39 @@
 package authors
 
-type AuthorsService struct {
-	authorsRepository *AuthorRepository
+import "context"
+
+type ServiceInterface interface {
+	FindAll(ctx context.Context) ([]Authors, error)
+	FindById(ctx context.Context,id int) (Authors, error)
+	Create(ctx context.Context, author Authors) (Authors, error)
+	Update(ctx context.Context, author Authors) (Authors, error)
+	Delete(ctx context.Context, author Authors) error
 }
 
-func NewAuthorsService(authorsRepository *AuthorRepository) *AuthorsService {
+type AuthorsService struct {
+	authorsRepository RepositoryInterface
+}
+
+func NewAuthorsService(authorsRepository RepositoryInterface) *AuthorsService {
 	return &AuthorsService{authorsRepository: authorsRepository}
 }
 
-func (s *AuthorsService) FindAll() ([]Authors, error) {
-	return s.authorsRepository.FindAll()
+func (s *AuthorsService) FindAll(ctx context.Context) ([]Authors, error) {
+	return s.authorsRepository.FindAll(ctx)
 }
 
-func (s *AuthorsService) FindById(id int) (Authors, error) {
-	return s.authorsRepository.FindById(id)
+func (s *AuthorsService) FindById(ctx context.Context, id int) (Authors, error) {
+	return s.authorsRepository.FindById(ctx, id)
 }
 
-func (s *AuthorsService) Create(author Authors) (Authors, error) {
-	return s.authorsRepository.Create(author)
+func (s *AuthorsService) Create(ctx context.Context, author Authors) (Authors, error) {
+	return s.authorsRepository.Create(ctx, author)
 }
 
-func (s *AuthorsService) Update(author Authors) (Authors, error) {
-	return s.authorsRepository.Update(author)
+func (s *AuthorsService) Update(ctx context.Context, author Authors) (Authors, error) {
+	return s.authorsRepository.Update(ctx, author)
 }
 
-func (s *AuthorsService) Delete(author Authors) error {
-	return s.authorsRepository.Delete(author)
+func (s *AuthorsService) Delete(ctx context.Context, author Authors) error {
+	return s.authorsRepository.Delete(ctx, author)
 }
