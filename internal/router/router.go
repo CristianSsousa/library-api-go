@@ -5,6 +5,7 @@ import (
 	"library-api-go/internal/domain/authors"
 	"library-api-go/internal/middleware"
 	"library-api-go/pkg/database"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -21,6 +22,8 @@ func LoadRouter() {
 
 
 	r.Use(middleware.ContentTypeMiddleware)
+	r.Use(middleware.ContextTimeoutMiddleware(3 * time.Second))
+	
 	authorsGroup := r.Group("/api/v1/authors")
 	{
 		authorsGroup.GET("", authorsHandler.GetAllAuthors)
