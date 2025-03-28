@@ -1,6 +1,11 @@
 package apperros
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+
+	"github.com/go-playground/validator/v10"
+)
 
 var (
 	// ErrInternalServerError will throw if any the Internal Server Error happen
@@ -18,3 +23,15 @@ var (
 	// ErrTimeOut will throw if the context is cancelled
 	ErrTimeOut = errors.New("timeout")
 )
+
+func FormatValidationErrors(errs validator.ValidationErrors) []map[string]string {
+	var errors []map[string]string
+	for _, e := range errs {
+		errorDetail := map[string]string{
+			"field":   e.Field(),
+			"message": fmt.Sprintf("O campo '%s' falhou na validação: %s", e.Field(), e.Tag()),
+		}
+		errors = append(errors, errorDetail)
+	}
+	return errors
+}

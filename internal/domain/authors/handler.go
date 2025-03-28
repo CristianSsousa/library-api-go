@@ -7,11 +7,14 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type AuthorsHandler struct {
 	authorsService ServiceInterface
 }
+
+var validate = validator.New()
 
 func NewAuthorsHandler(authorsService ServiceInterface) *AuthorsHandler {
 	return &AuthorsHandler{authorsService: authorsService}
@@ -58,6 +61,12 @@ func (h *AuthorsHandler) CreateAuthor(c *gin.Context) {
 		return
 	}
 
+	err := validate.Struct(author)
+	if err != nil {
+		validationErrors := apperros.FormatValidationErrors(err.(validator.ValidationErrors))
+		response.ErrorValidation(c, http.StatusBadRequest, validationErrors)
+		return
+	}
 	createdAuthor, err := h.authorsService.Create(c.Request.Context(), author.ToAuthors())
 	if err != nil {
 		response.ErrorResponse(c, http.StatusInternalServerError, apperros.ErrInternalServerError)

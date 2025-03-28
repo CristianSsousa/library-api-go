@@ -7,7 +7,7 @@ type Authors struct {
 
 type RequestAuthorsDTO struct {
 	ID   int    `json:"id"`
-	Name string `json:"name"`
+	Name string `json:"name" validate:"required"`
 }
 
 func (r *RequestAuthorsDTO) ToAuthors() Authors {

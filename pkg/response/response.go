@@ -22,5 +22,9 @@ func Success(c *gin.Context, statusCode int, data interface{}) {
 	c.JSON(statusCode, responseJSon)
 }
 
+func ErrorValidation(c *gin.Context, statusCode int, errors []map[string]string) {
+	c.JSON(statusCode, gin.H{"errors": errors})
+}
+
 
 
