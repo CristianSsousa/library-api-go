@@ -5,7 +5,6 @@ import (
 	"library-api-go/pkg/response"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +18,6 @@ func NewAuthorsHandler(authorsService ServiceInterface) *AuthorsHandler {
 }
 
 func (h *AuthorsHandler) GetAllAuthors(c *gin.Context) {
-	time.Sleep(5 * time.Second)
 
 	authors, err := h.authorsService.FindAll(c.Request.Context())
 	if err != nil {
