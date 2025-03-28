@@ -1,6 +1,7 @@
 package main
 
 import (
+	"library-api-go/config"
 	"library-api-go/internal/router"
 	"library-api-go/pkg/database"
 )
@@ -16,6 +17,7 @@ import (
 // @host localhost:8080
 // @BasePath /
 func main() {
+	config.LoadEnv()
 	database.ConectionWithDB()
 	router.LoadRouter()
 }
